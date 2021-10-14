@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+   <ImageView
+       android:id="@+id/iv_esd"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:src="@drawable/esd"
+       android:layout_centerHorizontal="true"
+       android:layout_marginTop="150dp"/>
+
+    <EditText
+        android:id="@+id/et_login"
+        android:layout_centerHorizontal="true"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="Compte utilisateur"
+        android:layout_below="@id/iv_esd"/>
+
+    <EditText
+        android:id="@+id/et_passwd"
+        android:ellipsize="start"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/et_login"
+        android:layout_centerHorizontal="true"
+        android:hint="Mot de passe"
+        android:inputType="textPassword" />
+
+    <Button
+        android:id="@+id/btn_connection"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/et_passwd"
+        android:text="Connexion"
+        android:padding="15dp"/>
+
+</RelativeLayout>
