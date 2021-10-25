@@ -1,0 +1,10 @@
+Hi There ! 
+
+Welcome to my QR Code PoC Github Page.
+
+This project has been developed for ESD Academy in order to demonstrate how easly you can compromise Android security only by scanning a QR Code.
+
+The PoC is composed by an Android Application developped in Java, which is the client, and a Command and Control Server written in Python.
+Only the interesting files has been uploaded to this repo, please note that in ANYWAY and in ANY CASE, I'M NOT RESPONSIBLE for the wrong usage of this snippet
+
+As said above, it's only purpose is to demonstrate how you can use QR Code to compromise cellphone, please do not use this code badly, or even better, don't use this code at all.
